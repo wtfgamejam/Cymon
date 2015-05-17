@@ -1,18 +1,9 @@
 pc.script.create 'EntityPicker', (app) ->
-  class EntityPicker
-    constructor: (entity) ->
-      @entity = entity
+  class EntityPicker extends EnjoyCanvas.PointerHandler
+    app: app
+    events:
+      'tap': 'test'
 
-    initialize: ->
-      app.mouse.disableContextMenu()
-      app.mouse.on pc.input.EVENT_MOUSEDOWN, @onSelect, this
-
-    update: (dt) ->
-
-    onSelect: (e) ->
-      from = @entity.getPosition()
-      to   = @entity.camera.screenToWorld(e.x, e.y, @entity.camera.farClip)
-
-      app.systems.rigidbody.raycastFirst from, to, (result) ->
-        pickedEntity = result.entity
-        pickedEntity.fire 'selected'
+    test: (event) ->
+      entity = @get_touched_entity_from event
+      entity.fire 'selected'
