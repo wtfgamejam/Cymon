@@ -4,9 +4,12 @@ class EnjoyCanvas.AnimateController
 
   initialize: ->
     @init_animator_variables()
+    @_delegateEvents()
 
   update: (dt) ->
     @run_animation dt
+
+  events: {}
 
   run_animation: (dt) ->
     @_animate.call this, dt if @_animate instanceof Function
@@ -100,3 +103,7 @@ class EnjoyCanvas.AnimateController
   _init_current_rotation: ->
     @current.rotation = _(@entity.getLocalRotation().getEulerAngles()).pick('x', 'y', 'z')
 
+
+  _delegateEvents: ->
+    _(@events).each (method_name, event) =>
+      @entity.on event, _(@[method_name]).bind(this) if @[method_name] instanceof Function
