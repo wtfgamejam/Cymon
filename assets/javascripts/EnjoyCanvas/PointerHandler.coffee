@@ -1,19 +1,11 @@
 class EnjoyCanvas.PointerHandler
   app: null
   hammer_options:
-    prevent_default: true,
-    drag_max_touches: 2,
-    transform_min_scale: 0.08,
-    transform_min_rotation: 180,
-    transform_always_block: true,
-    drag: true
-    hold: false,
-    release: false,
-    swipe: false,
-    tap: false
+    prevent_default: true
+    drag_max_touches: 1
 
   constructor: (entity) ->
-    @assigned_entities = []
+    @entities = []
     @entity = entity
 
   initialize: ->
@@ -21,6 +13,8 @@ class EnjoyCanvas.PointerHandler
 
     @app.mouse.disableContextMenu()
     @hammer = Hammer @app.graphicsDevice.canvas, @hammer_options
+    @hammer.add new Hammer.Pan direction: Hammer.DIRECTION_ALL
+
     @_delegateEvents()
 
 
@@ -34,15 +28,6 @@ class EnjoyCanvas.PointerHandler
 
     @app.systems.rigidbody.raycastFirst from, to, (result) -> output = result.entity
     output
-
-
-  assign_entity: (entity) ->
-    @assigned_entities.push entity
-
-
-  remove_entity: (entity) ->
-    @assigned_entities.length = 0
-    # will do later :P
 
 
   _delegateEvents: ->
