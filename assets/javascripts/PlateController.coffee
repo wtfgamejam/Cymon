@@ -1,23 +1,30 @@
-pc.script.create 'PlateController', (app) ->
+pc.script.attribute 'plate_id', 'string', 'plate'
+pc.script.create 'controller', (app) ->
   class PlateController extends EnjoyCanvas.AnimateController
+    initialize: ->
+      @scene_entity = app.root.findByName('GameScene')
+      @scene_entity.script.controller.add_plate_controller this
+
     events:
-      'tap': 'toggle'
-      'rotate-horizontal': 'rotate_horizontal'
-      'rotate-vertical':   'rotate_vertical'
-      'rotated': 'finish_rotating'
+      'tap': 'tapping'
+      'flip-horizontal': 'flip_horizontal'
+      'flip-vertical':   'flip_vertical'
+      'fliped': 'finish_flipping'
 
 
 
-    toggle: ->
+    tapping: ->
       return if @animating
 
       @animating = true
-      @animate position: {y: -0.2}, seconds: 0.2, =>
-        @animate position: {y: 0.2}, seconds: 0.2, =>
+      @animate position: {y: -0.3}, seconds: 0.15, =>
+        @animate position: {y: 0.3}, seconds: 0.15, =>
           @animating = false
 
+      @last_action = 'tapped,normal'
 
-    rotate_horizontal: (delta) ->
+
+    flip_horizontal: (delta) ->
       return if @animating
 
       z = delta.x * -1.5
@@ -26,7 +33,7 @@ pc.script.create 'PlateController', (app) ->
       @add_rotation 0, 0, z
       @_last_rotation_z = z
 
-    rotate_vertical: (delta) ->
+    flip_vertical: (delta) ->
       return if @animating
 
       x = delta.y * 1.5
@@ -36,7 +43,7 @@ pc.script.create 'PlateController', (app) ->
       @_last_rotation_x = x
 
 
-    finish_rotating: (finished_direction) ->
+    finish_flipping: (finished_direction) ->
       return if @animating
 
       @_init_current_rotation()
@@ -51,12 +58,36 @@ pc.script.create 'PlateController', (app) ->
         when 'right'
           @animate rotation: {z: -180 - @_last_rotation_z }, seconds: 0.3, => @animating = false
 
+      @last_action = "flipped,#{finished_direction}"
 
+    mimic: (type, options = {}) ->
+      return if @animating
+      @animating = true
+      animating_time = 0.6
 
+      switch type
+        when 'flip'
+          switch options.direction
+            when 'up'
+              @animate rotation: {x: -180 }, seconds: animating_time, => @animating = false
+            when 'down'
+              @animate rotation: {x: 180 }, seconds: animating_time, => @animating = false
+            when 'left'
+              @animate rotation: {z: 180 }, seconds: animating_time, => @animating = false
+            when 'right'
+              @animate rotation: {z: -180 }, seconds: animating_time, => @animating = false
 
+        when 'tap'
+          @animate position: {y: -0.3}, seconds: animating_time/2, =>
+            @animate position: {y: 0.3}, seconds: animating_time/2, =>
+              @animating = false
 
 
     add_rotation: (x, y, z) ->
       quat = new pc.Quat
       quat.setFromEulerAngles x, y, z
       @entity.setLocalRotation quat
+
+    get_current_status: ->
+      plate_id: @plate_id
+      action: @last_action

@@ -1,10 +1,11 @@
 class EnjoyCanvas.AnimateController
   constructor: (entity) ->
     @entity = entity
-
-  initialize: ->
     @init_animator_variables()
     @_delegateEvents()
+
+  initialize: ->
+
 
   update: (dt) ->
     @run_animation dt
